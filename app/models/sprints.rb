@@ -8,16 +8,20 @@ class Sprints < Version
   class << self
     def open_sprints(project = nil)
       if project
-        scoped(:order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "status = 'open' and (project_id IN (?) OR sharing = 'system')", [project.id, project.parent_id].compact ])
+#        scoped(:order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "status = 'open' and (project_id IN (?) OR sharing = 'system')", [project.id, project.parent_id].compact ])
+        all().order('ir_start_date ASC, ir_end_date ASC').where([ "status = 'open' and (project_id IN (?) OR sharing = 'system')", [project.id, project.parent_id].compact ])
       else
-        scoped(:order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "status = 'open'"])
+#        scoped(:order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "status = 'open'"])
+        all().order('ir_start_date ASC, ir_end_date ASC').where([ "status = 'open'"])
       end
     end
     def all_sprints(project = nil)
       if project
-        scoped(:order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "project_id IN (?) OR sharing = 'system'", [project.id, project.parent_id].compact ])
+#        find(:all, :order => 'ir_start_date ASC, ir_end_date ASC', :conditions => [ "project_id IN (?) OR sharing = 'system'", [project.id, project.parent_id].compact ])
+        all().order('ir_start_date ASC, ir_end_date ASC').where([ "project_id IN (?) OR sharing = 'system'", [project.id, project.parent_id].compact ])
       else
-        scoped(:order => 'ir_start_date ASC, ir_end_date ASC')
+#        find(:all, :order => 'ir_start_date ASC, ir_end_date ASC')
+        all().order('ir_start_date ASC, ir_end_date ASC')
       end
     end
   end
