@@ -3,7 +3,6 @@ class SprintsTasks < Issue
   
   acts_as_list :column => "ir_position"
   has_many :custom_task_fields, -> { order 'type_id ASC' }, dependent: :destroy
-  # , order: 'type_id ASC'
   
   after_create :create_custom_task_fields
   
@@ -22,7 +21,6 @@ class SprintsTasks < Issue
       user = User.current.id if user == 'current'
       cond << user
     end
-    #    tasks = SprintsTasks.find(:all, :select => 'issues.*, sum(hours) as spent', :order => SprintsTasks::ORDER, :conditions => cond, :group => "issues.id", :joins => [:status], :joins => "left join time_entries ON time_entries.issue_id = issues.id", :include => [:assigned_to, :custom_task_fields])
     tasks = SprintsTasks.all().select('issues.*, sum(hours) as spent').order(SprintsTasks::ORDER).where(cond).group("issues.id").joins([:status]).joins("left join time_entries ON time_entries.issue_id = issues.id").includes([:assigned_to, :custom_task_fields])
 
     filter_out_user_stories_with_children tasks
@@ -44,7 +42,6 @@ class SprintsTasks < Issue
       end
     end
     
-    #    tasks = SprintsTasks.find(:all, :select => 'issues.*, trackers.name AS t_name', :order => SprintsTasks::ORDER, :conditions => cond, :joins => :status, :joins => "left join issue_statuses on issue_statuses.id = status_id left join trackers on trackers.id = tracker_id", :include => [:assigned_to, :custom_task_fields])
     tasks = SprintsTasks.all().select('issues.*, trackers.name AS t_name').order(SprintsTasks::ORDER).where(cond).joins(:status).joins("left join trackers on trackers.id = tracker_id").includes([:assigned_to, :custom_task_fields])
     filter_out_user_stories_with_children tasks
   end
