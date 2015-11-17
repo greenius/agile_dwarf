@@ -1,13 +1,14 @@
 class SprintsTasks < Issue
   unloadable
-
+  
   acts_as_list :column => "ir_position"
-  has_many :custom_task_fields, dependent: :destroy, order: 'type_id ASC'
-
+  has_many :custom_task_fields, -> { order 'type_id ASC' }, dependent: :destroy
+  # , order: 'type_id ASC'
+  
   after_create :create_custom_task_fields
-
+  
   ORDER = 'case when issues.ir_position is null then 1 else 0 end ASC, case when issues.ir_position is NULL then issues.id else issues.ir_position end ASC'
-
+  
   def self.get_tasks_by_status(project, status, sprint, user)
     cond = ["issues.project_id = ? and status_id = ?", project.id, status]
     if sprint == 'null'
@@ -21,7 +22,7 @@ class SprintsTasks < Issue
       user = User.current.id if user == 'current'
       cond << user
     end
-#    tasks = SprintsTasks.find(:all, :select => 'issues.*, sum(hours) as spent', :order => SprintsTasks::ORDER, :conditions => cond, :group => "issues.id", :joins => [:status], :joins => "left join time_entries ON time_entries.issue_id = issues.id", :include => [:assigned_to, :custom_task_fields])
+    #    tasks = SprintsTasks.find(:all, :select => 'issues.*, sum(hours) as spent', :order => SprintsTasks::ORDER, :conditions => cond, :group => "issues.id", :joins => [:status], :joins => "left join time_entries ON time_entries.issue_id = issues.id", :include => [:assigned_to, :custom_task_fields])
     tasks = SprintsTasks.all().select('issues.*, sum(hours) as spent').order(SprintsTasks::ORDER).where(cond).group("issues.id").joins([:status]).joins("left join time_entries ON time_entries.issue_id = issues.id").includes([:assigned_to, :custom_task_fields])
 
     filter_out_user_stories_with_children tasks
@@ -42,12 +43,12 @@ class SprintsTasks < Issue
         cond << sprint
       end
     end
-
-#    tasks = SprintsTasks.find(:all, :select => 'issues.*, trackers.name AS t_name', :order => SprintsTasks::ORDER, :conditions => cond, :joins => :status, :joins => "left join issue_statuses on issue_statuses.id = status_id left join trackers on trackers.id = tracker_id", :include => [:assigned_to, :custom_task_fields])
-    tasks = SprintsTasks.all().select('issues.*, trackers.name AS t_name').order(SprintsTasks::ORDER).where(cond).joins(:status).joins("left join issue_statuses on issue_statuses.id = status_id left join trackers on trackers.id = tracker_id").includes([:assigned_to, :custom_task_fields])
+    
+    #    tasks = SprintsTasks.find(:all, :select => 'issues.*, trackers.name AS t_name', :order => SprintsTasks::ORDER, :conditions => cond, :joins => :status, :joins => "left join issue_statuses on issue_statuses.id = status_id left join trackers on trackers.id = tracker_id", :include => [:assigned_to, :custom_task_fields])
+    tasks = SprintsTasks.all().select('issues.*, trackers.name AS t_name').order(SprintsTasks::ORDER).where(cond).joins(:status).joins("left join trackers on trackers.id = tracker_id").includes([:assigned_to, :custom_task_fields])
     filter_out_user_stories_with_children tasks
   end
-
+  
   def self.filter_out_user_stories_with_children(tasks)
     # if the task is a user story then only display it if it has no child issues.
     # if it does then we schedule the child issues, not the user story itself
@@ -64,14 +65,14 @@ class SprintsTasks < Issue
       tasks
     end
   end
-
+  
   def self.get_backlog(project = nil)
     SprintsTasks.get_tasks_by_sprint(project, 'null')
   end
-
+  
   def move_after(prev_id)
     remove_from_list
-
+    
     if prev_id.to_s == ''
       prev = nil
     else
