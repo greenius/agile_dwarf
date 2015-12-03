@@ -29,6 +29,7 @@ class SprintsTasks < Issue
   def self.get_tasks_by_sprint(project, sprint)
     cond = ["is_closed = ?", false]
     if project.present?
+      # TODO: This needs to do something like the PRoject.rolled_up_versions
       cond[0] += ' and project_id IN (?)'
       cond << [project.id, project.parent_id].compact
     end
