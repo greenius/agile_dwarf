@@ -1,7 +1,8 @@
 class AdsprintsController < ApplicationController
   unloadable
 
-  before_filter :find_project, :authorize
+#  before_filter :find_project, :authorize
+  before_filter :find_project_by_project_id, :authorize
 
   def list
     @backlog = SprintsTasks.get_backlog(@project)

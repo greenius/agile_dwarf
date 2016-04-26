@@ -1,7 +1,7 @@
 class AdtasksController < ApplicationController
   unloadable
 
-  before_filter :find_project, :authorize
+  before_filter :find_project_by_project_id, :authorize
 
   def list
     # data for filters
@@ -52,12 +52,5 @@ class AdtasksController < ApplicationController
       column = { tasks: tasks, id: status_ids[i], points: points }
       @columns << column
     end
-  end
-
-  private
-
-  def find_project
-    # @project variable must be set before calling the authorize filter
-    @project = Project.find(params[:project_id])
   end
 end

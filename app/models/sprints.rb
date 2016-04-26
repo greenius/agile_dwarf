@@ -7,27 +7,25 @@ class Sprints < Version
 
   class << self
     def open_sprints(project = nil)
-      if project
-        # all().order('ir_start_date ASC, ir_end_date ASC').where([ "status = 'open' and (project_id IN (?) OR sharing = 'system')", [project.id, project.parent_id].compact ])
-        # all().order('ir_start_date ASC, ir_end_date ASC').where([ "status = 'open' AND project_id IN (?)", project.rolled_up_versions])
+      unless project.nil?
         self.rolled_up_versions(project).order('ir_start_date ASC, ir_end_date ASC').where([ "versions.status = 'open'"])
       else
         all().order('ir_start_date ASC, ir_end_date ASC').where([ "status = 'open'"])
       end
     end
     def all_sprints(project = nil)
-      if project
-        # all().order('ir_start_date ASC, ir_end_date ASC').where([ "project_id IN (?) OR sharing = 'system'", [project.id, project.parent_id].compact ])
+      unless project.nil?
         self.rolled_up_versions(project).order('ir_start_date ASC, ir_end_date ASC')
       else
         all().order('ir_start_date ASC, ir_end_date ASC')
       end
     end
     def rolled_up_versions(project)
-      @rolled_up_versions ||=
+      logger.debug "Project lft=#{project.lft}, rft=#{project.rgt}"
+      @rolled_up_versions =
         Sprints.
         joins(:project).
-        where("#{Project.table_name}.lft >= ? AND #{Project.table_name}.rgt <= ? AND #{Project.table_name}.status <> ?", project.lft, project.rgt, Project::STATUS_ARCHIVED)
+        where("#{Project.table_name}.lft >= :lft AND #{Project.table_name}.rgt <= :rgt AND #{Project.table_name}.status <> :status", { lft: project.lft, rgt: project.rgt, status: Project::STATUS_ARCHIVED })
     end
   end
   
@@ -36,7 +34,7 @@ class Sprints < Version
   end
 
   def tasks
-    @tasks || SprintsTasks.get_tasks_by_sprint(self.project, self.id)
+    SprintsTasks.get_tasks_by_sprint(self.project, self.id)
   end
 
 
