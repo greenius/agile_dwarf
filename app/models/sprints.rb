@@ -22,13 +22,12 @@ class Sprints < Version
     end
     def rolled_up_versions(project)
       logger.debug "Project lft=#{project.lft}, rft=#{project.rgt}"
-      @rolled_up_versions =
-        Sprints.
+      Sprints.
         joins(:project).
         where("#{Project.table_name}.lft >= :lft AND #{Project.table_name}.rgt <= :rgt AND #{Project.table_name}.status <> :status", { lft: project.lft, rgt: project.rgt, status: Project::STATUS_ARCHIVED })
     end
   end
-  
+
   def start_and_end_dates
     errors.add_to_base("Sprint cannot end before it starts") if self.ir_start_date && self.ir_end_date && self.ir_start_date >= self.ir_end_date
   end
